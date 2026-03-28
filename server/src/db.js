@@ -1,20 +1,12 @@
-import mysql from 'mysql2/promise';
-import 'dotenv/config';
+import mysql from "mysql2/promise";
+import "dotenv/config";
 
-const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST ?? '127.0.0.1',
-  port: Number(process.env.MYSQL_PORT ?? 3306),
-  user: process.env.MYSQL_USER ?? 'root',
-  password: process.env.MYSQL_PASSWORD ?? '',
-  database: process.env.MYSQL_DATABASE ?? 'taskorbit',
-  waitForConnections: true,
-  connectionLimit: 10,
-});
+const pool = mysql.createPool(process.env.DATABASE_URL);
 
 export async function pingDb() {
   const conn = await pool.getConnection();
   try {
-    await conn.query('SELECT 1');
+    await conn.query("SELECT 1");
     return true;
   } finally {
     conn.release();
@@ -22,4 +14,3 @@ export async function pingDb() {
 }
 
 export { pool };
-

@@ -1,4 +1,4 @@
--- Run if you already applied schema.sql before app_state existed:
+X-- Run if you already applied schema.sql before app_state existed:
 --   mysql -u root -p taskorbit < schema_app_state.sql
 
 USE taskorbit;

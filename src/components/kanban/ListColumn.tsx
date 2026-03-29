@@ -66,7 +66,7 @@ export default function ListColumn({ list, cards, filteredCardIds, isFiltering }
     <div
       ref={setSortableRef}
       style={style}
-      className="flex-shrink-0 w-64 sm:w-72 glass-card rounded-xl shadow-card flex flex-col max-h-[calc(100vh-8rem)]"
+      className="flex-shrink-0 w-[calc(100vw-2rem)] max-w-[18rem] sm:max-w-none sm:w-64 md:w-72 glass-card rounded-xl shadow-card flex flex-col max-h-[calc(100dvh-8rem)] sm:max-h-[calc(100vh-8rem)]"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-3 pb-1" {...attributes} {...listeners}>

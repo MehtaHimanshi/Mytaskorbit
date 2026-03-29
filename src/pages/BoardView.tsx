@@ -68,8 +68,8 @@ export default function BoardView() {
 
   if (!board) {
     return (
-      <div className="min-h-screen flex items-center justify-center gradient-hero">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center gradient-hero px-4">
+        <div className="text-center max-w-md w-full">
           <p className="text-lg text-muted-foreground mb-4">Board not found</p>
           <Link to="/" className="text-primary hover:underline">Go home</Link>
         </div>
@@ -392,7 +392,7 @@ export default function BoardView() {
               ))}
 
               {/* Add list */}
-              <div className="flex-shrink-0 w-64 sm:w-72">
+              <div className="flex-shrink-0 w-[calc(100vw-2rem)] max-w-[18rem] sm:max-w-none sm:w-64 md:w-72">
                 {addingList ? (
                   <div className="glass-card rounded-xl p-3 shadow-card space-y-2">
                     <Input

@@ -5,7 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
-import { MoreHorizontal, Plus, Pencil, Trash2 } from 'lucide-react';
+import { GripVertical, MoreHorizontal, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -34,12 +34,12 @@ export default function ListColumn({ list, cards, filteredCardIds, isFiltering }
     isDragging,
   } = useSortable({
     id: list.id,
-    data: { type: 'list' },
+    data: { type: 'list', listId: list.id },
   });
 
   const { setNodeRef: setDroppableRef } = useDroppable({
-    id: list.id,
-    data: { type: 'list' },
+    id: `droppable-${list.id}`,
+    data: { type: 'list', listId: list.id },
   });
 
   const style = {
@@ -66,10 +66,20 @@ export default function ListColumn({ list, cards, filteredCardIds, isFiltering }
     <div
       ref={setSortableRef}
       style={style}
-      className="flex-shrink-0 w-[calc(100vw-2rem)] max-w-[18rem] sm:max-w-none sm:w-64 md:w-72 glass-card rounded-xl shadow-card flex flex-col max-h-[calc(100dvh-8rem)] sm:max-h-[calc(100vh-8rem)]"
+      className="flex-shrink-0 w-[calc(100vw-2rem)] max-w-[18rem] sm:max-w-none sm:w-64 md:w-72 glass-card rounded-xl shadow-card flex flex-col min-h-0 max-h-[calc(100dvh-8rem)] sm:max-h-[calc(100vh-8rem)]"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 pb-1" {...attributes} {...listeners}>
+      {/* Header — drag handle only (avoids fighting vertical scroll & menu on touch) */}
+      <div className="flex items-center gap-2 p-3 pb-1">
+        <button
+          type="button"
+          className="touch-none flex-shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted/60 hover:text-foreground cursor-grab active:cursor-grabbing"
+          aria-label={`Reorder list ${list.title}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
         {editing ? (
           <Input
             autoFocus
@@ -80,13 +90,13 @@ export default function ListColumn({ list, cards, filteredCardIds, isFiltering }
             className="h-7 text-sm font-semibold"
           />
         ) : (
-          <h3 className="text-sm font-semibold text-foreground cursor-grab">{list.title}</h3>
+          <h3 className="text-sm font-semibold text-foreground truncate">{list.title}</h3>
         )}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{cards.length}</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-1 rounded hover:bg-muted/60 transition-colors">
+              <button type="button" className="p-1 rounded hover:bg-muted/60 transition-colors touch-manipulation">
                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
@@ -100,10 +110,11 @@ export default function ListColumn({ list, cards, filteredCardIds, isFiltering }
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        </div>
       </div>
 
       {/* Cards */}
-      <div ref={setDroppableRef} className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[40px]">
+      <div ref={setDroppableRef} className="flex-1 min-h-0 overflow-y-auto touch-pan-y p-2 space-y-2">
         <SortableContext items={visibleCards.map(c => c.id)} strategy={verticalListSortingStrategy}>
           {visibleCards.map(card => (
             <TaskCard key={card.id} card={card} />

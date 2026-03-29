@@ -33,8 +33,8 @@ export default function HomePage() {
     <div className="min-h-screen gradient-hero">
       {/* Header */}
       <header className="glass-card sticky top-0 z-50 border-b border-border/50">
-        <div className="container mx-auto flex items-center justify-between py-3 px-4">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+        <div className="container mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-3 px-4">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
             <div className="relative">
               <img
                 src={logo}
@@ -51,14 +51,14 @@ export default function HomePage() {
             </div>
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
+            <div className="relative w-full sm:w-auto max-w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search boards..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="pl-9 w-36 sm:w-56 bg-background/60 backdrop-blur-sm border-border/50"
+                className="pl-9 w-full sm:w-56 max-w-full bg-background/60 backdrop-blur-sm border-border/50"
               />
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function HomePage() {
         </div>
 
         {/* Boards Grid */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
           <h3 className="text-base sm:text-lg font-semibold font-display text-foreground">Your Boards</h3>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -116,7 +116,7 @@ export default function HomePage() {
                 />
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Background</p>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                     {BACKGROUND_PRESETS.map(bg => (
                       <button
                         key={bg.name}

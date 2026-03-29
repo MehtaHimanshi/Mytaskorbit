@@ -380,7 +380,7 @@ export default function BoardView() {
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={lists.map(l => l.id)} strategy={horizontalListSortingStrategy}>
-            <div className="flex w-max min-h-0 gap-3 sm:gap-4 items-start">
+            <div className="flex w-full sm:w-max min-h-0 gap-3 sm">
               {lists.map(list => (
                 <ListColumn
                   key={list.id}

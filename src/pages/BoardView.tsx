@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useKanban } from '@/context/KanbanContext';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ArrowLeft, Plus, Search, Filter, Palette, Trash2, Menu, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,10 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
-  rectIntersection,
+  closestCenter,
+  type CollisionDetection,
 } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import TaskCard from '@/components/kanban/TaskCard';
 import logo from '@/assets/logo.png';
 
@@ -60,6 +61,21 @@ export default function BoardView() {
   }, [allCards, search, filterLabel, filterMember]);
 
   const isFiltering = !!(search || filterLabel || filterMember);
+
+  const cardIdSet = useMemo(() => new Set(allCards.map(c => c.id)), [allCards]);
+
+  /** Prefer card-vs-card hits while dragging cards so list shells / columns don't steal the drop target. */
+  const collisionDetection: CollisionDetection = useCallback(
+    args => {
+      if (args.active.data.current?.type === 'card') {
+        const cardContainers = args.droppableContainers.filter(c => cardIdSet.has(String(c.id)));
+        const overCards = closestCenter({ ...args, droppableContainers: cardContainers });
+        if (overCards.length > 0) return overCards;
+      }
+      return closestCenter(args);
+    },
+    [cardIdSet]
+  );
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -148,7 +164,8 @@ export default function BoardView() {
     if (activeType === 'card' && overType === 'card' && active.id !== over.id) {
       const activeCard = state.cards.find(c => c.id === active.id);
       const overCard = state.cards.find(c => c.id === over.id);
-      if (!activeCard || !overCard || activeCard.listId !== overCard.listId) return;
+      if (!activeCard || !overCard) return;
+      if (activeCard.listId !== overCard.listId) return;
 
       const listCards = state.cards
         .filter(c => c.listId === activeCard.listId && !c.archived)
@@ -156,9 +173,28 @@ export default function BoardView() {
       const cardIds = listCards.map(c => c.id);
       const oldIdx = cardIds.indexOf(active.id as string);
       const newIdx = cardIds.indexOf(over.id as string);
+      if (oldIdx < 0 || newIdx < 0) return;
+      dispatch({
+        type: 'REORDER_CARDS',
+        payload: { listId: activeCard.listId, cardIds: arrayMove(cardIds, oldIdx, newIdx) },
+      });
+    }
+
+    // Dropped on list scroll area (not directly on another card) — commit order (e.g. move to end of column).
+    if (activeType === 'card' && overType === 'list' && String(over.id).startsWith('droppable-')) {
+      const listId = (over.data.current as { listId?: string } | undefined)?.listId;
+      const activeCard = state.cards.find(c => c.id === active.id);
+      if (!listId || !activeCard || activeCard.listId !== listId) return;
+
+      const listCards = state.cards
+        .filter(c => c.listId === listId && !c.archived)
+        .sort((a, b) => a.position - b.position);
+      const cardIds = listCards.map(c => c.id);
+      const oldIdx = cardIds.indexOf(active.id as string);
+      if (oldIdx < 0) return;
       cardIds.splice(oldIdx, 1);
-      cardIds.splice(newIdx, 0, active.id as string);
-      dispatch({ type: 'REORDER_CARDS', payload: { listId: activeCard.listId, cardIds } });
+      cardIds.push(active.id as string);
+      dispatch({ type: 'REORDER_CARDS', payload: { listId, cardIds } });
     }
   };
 
@@ -374,7 +410,7 @@ export default function BoardView() {
       <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden overscroll-x-contain p-3 sm:p-4 touch-pan-x">
         <DndContext
           sensors={sensors}
-          collisionDetection={rectIntersection}
+          collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}

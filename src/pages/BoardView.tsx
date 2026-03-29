@@ -9,8 +9,7 @@ import { BACKGROUND_PRESETS } from '@/store/kanbanStore';
 import ListColumn from '@/components/kanban/ListColumn';
 import {
   DndContext,
-  closestCorners,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
@@ -18,6 +17,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
+  rectIntersection,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import TaskCard from '@/components/kanban/TaskCard';
@@ -62,14 +62,14 @@ export default function BoardView() {
   const isFiltering = !!(search || filterLabel || filterMember);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 12 } })
   );
 
   if (!board) {
     return (
-      <div className="min-h-screen flex items-center justify-center gradient-hero">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center gradient-hero px-4">
+        <div className="text-center max-w-md w-full">
           <p className="text-lg text-muted-foreground mb-4">Board not found</p>
           <Link to="/" className="text-primary hover:underline">Go home</Link>
         </div>
@@ -110,9 +110,11 @@ export default function BoardView() {
         }
       } else if (overType === 'list') {
         const currentCard = state.cards.find(c => c.id === active.id);
-        if (currentCard && currentCard.listId !== over.id) {
-          toListId = over.id as string;
-          toPosition = state.cards.filter(c => c.listId === over.id && !c.archived).length;
+        const targetListId =
+          (over.data.current as { listId?: string } | undefined)?.listId ?? (over.id as string);
+        if (currentCard && currentCard.listId !== targetListId) {
+          toListId = targetListId;
+          toPosition = state.cards.filter(c => c.listId === targetListId && !c.archived).length;
         }
       }
 
@@ -368,17 +370,17 @@ export default function BoardView() {
         )}
       </header>
 
-      {/* Board Content */}
-      <div className="flex-1 overflow-x-auto p-3 sm:p-4">
+      {/* Board Content — min-h-0 so nested list columns can shrink and scroll on small viewports */}
+      <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden overscroll-x-contain p-3 sm:p-4 touch-pan-x">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={rectIntersection}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={lists.map(l => l.id)} strategy={horizontalListSortingStrategy}>
-            <div className="flex gap-3 sm:gap-4 items-start h-full">
+            <div className="flex w-max min-h-0 gap-3 sm:gap-4 items-start">
               {lists.map(list => (
                 <ListColumn
                   key={list.id}
@@ -392,7 +394,7 @@ export default function BoardView() {
               ))}
 
               {/* Add list */}
-              <div className="flex-shrink-0 w-64 sm:w-72">
+              <div className="flex-shrink-0 w-[calc(100vw-2rem)] max-w-[18rem] sm:max-w-none sm:w-64 md:w-72">
                 {addingList ? (
                   <div className="glass-card rounded-xl p-3 shadow-card space-y-2">
                     <Input

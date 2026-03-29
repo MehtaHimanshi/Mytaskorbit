@@ -1,0 +1,13 @@
+[33maabd480[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Revert "Make frontend responsive"
+[33m6a5d00e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Make frontend responsive
+[33mb04c398[m Make frontend responsive
+[33mdd80e6d[m Final update
+[33m248d68d[m Remove .env.example
+[33m90ed1b4[m Update vercel.json
+[33me80635e[m fix routing for vercel
+[33m0917f3e[m Update index.html
+[33m394870e[m Update index.html
+[33m874745d[m Change api.ts file
+[33m637fe1b[m Update db.js
+[33m0b172fb[m Change index.js
+[33ma6e4801[m Uploading taskorbit project
